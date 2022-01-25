@@ -9,7 +9,7 @@ let changeRepo = document.getElementById("change-repo");
 chrome.storage.sync.get("repo", function ({ repo }) {
   // Display the git input or change input repo here
   if (!repo) {
-    // If repo not setup then render intput
+    // If repo not setup then render input
     inputArea.style.display = "inline";
   } else {
     // Render button to change repo here

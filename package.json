@@ -1,0 +1,29 @@
+{
+  "name": "injext-extension",
+  "version": "1.0.0",
+  "description": "This is the chrome extension of Injext.",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "babel-compile": "./node_modules/.bin/babel src --out-dir lib",
+    "build": "rimraf ./lib && npm run babel-compile && copyfiles -f public/* src/*.html src/*.json lib/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PDROJACK/injext-extension.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/PDROJACK/injext-extension/issues"
+  },
+  "homepage": "https://github.com/PDROJACK/injext-extension#readme",
+  "devDependencies": {
+    "@babel/cli": "^7.16.8",
+    "@babel/core": "^7.16.12",
+    "@babel/preset-env": "^7.16.11"
+  },
+  "dependencies": {
+    "axios": "^0.25.0"
+  }
+}
