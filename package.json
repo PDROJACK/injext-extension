@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "babel-compile": "./node_modules/.bin/babel src --out-dir lib",
-    "build": "rimraf ./lib && npm run babel-compile && copyfiles -f public/* src/*.html src/*.json lib/"
+    "build": "webpack"
   },
   "repository": {
     "type": "git",
@@ -21,7 +21,9 @@
   "devDependencies": {
     "@babel/cli": "^7.16.8",
     "@babel/core": "^7.16.12",
-    "@babel/preset-env": "^7.16.11"
+    "@babel/preset-env": "^7.16.11",
+    "webpack": "^5.67.0",
+    "webpack-cli": "^4.9.2"
   },
   "dependencies": {
     "axios": "^0.25.0"

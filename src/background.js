@@ -1,5 +1,3 @@
-const { linkAccount, getTemplateData, getTemplateNames } = require("./api")
-
 // Creates random token for user id
 function getRandomToken() {
     // E.g. 8 * 32 = 256 bits token
@@ -13,34 +11,86 @@ function getRandomToken() {
     return hex;
 }
 
-const clickSelection = function (info, selectedTab) {
+local_cache = {}
 
-  chrome.tabs.query({active: true, currentWindow: true}, function() {
-    chrome.tabs.sendMessage(selectedTab.id, { data: "active"}, function(response) {
-      console.log(response.active);
-    });
-  });
+chrome.storage.sync.get(['userId']).then(res => {
+  local_cache.userId = res.userId;
+  console.log(local_cache)
+})
 
+const api = "http://localhost:3000"
+
+const getTemplateNames = async ( userId ) => {
+  const user = "86c8e255-56fc-48f6-8440-f62496fa74a2";
+  const response  = await fetch(`${api}/templates/${user}`, {
+      method: "GET",
+      mode: "no-cors",
+      headers: {
+          'Content-Type': "application/json"
+      }
+  })
+  return response.json();
 }
 
-if(chrome.storage.sync.get(userId) !== null) {
+const getTemplateData = async ( userId, templateName ) => {
+  const response  = await fetch(`${api}/servetemplate/${userId}/${templateName}`, {
+      method: "GET",
+      mode: "no-cors",
+      headers: {
+          'Content-Type': "application/json"
+      }
+  })
+  
+  return response.json();
+} 
 
-  getTemplateNames(chrome.storage.sync.get(userId)).then( res => {
-    const templates = res.body();
+const clickSelection = function (info, selectedTab) {
+  chrome.tabs.query({active: true, currentWindow: true}, function() {
 
-    templates.map( t => {
+      getTemplateData( local_cache.userId , info.menuItemId).then( res => {
+          const body = res.template;
+          chrome.tabs.sendMessage(selectedTab.id, { data: body }, function(response) {
+              console.log("success")
+          });
+      })
 
+
+  });
+}
+
+// First level , add directly to parents 
+const parentMenu = chrome.contextMenus.create({
+  title: "injext",
+  id: "parent",
+  contexts: ["editable"]
+})
+
+
+
+
+if(local_cache !== null) {
+     
+    const templates = getTemplateNames(local_cache.userId);
+
+    templates.then( body => {
+
+      body.data.map( t => {
         if(t.key ==="#") {
-
+          
           // First level , add directly to parents 
-          const parentMenu = chrome.contextMenus.create({
-            title: "injext",
-            id: "parent",
-            contexts: ["editable"]
+          t.value.map( c => {
+            
+            chrome.contextMenus.create({
+              title: c.split(".")[0],
+              id: c.split(".")[0],
+              parentId: "parent",
+              contexts: ["editable"]
+            })
+            
           })
-
+          
         } else {
-
+          
           // Second Level directories, add directories to parent then children to these directories
           chrome.contextMenus.create({
             title: t.key,
@@ -48,25 +98,31 @@ if(chrome.storage.sync.get(userId) !== null) {
             parentId: "parent",
             contexts: ["editable"]
           })
-
+          
           t.value.map( c => {
-
+            
             chrome.contextMenus.create({
-              title: "child" + c,
-              id: c.split(".")[0],
+              title: c.split(".")[0],
+              id: c,
               parentId: t.key,
               contexts: ["editable"]
             })
-
+            
           })
-
         }
+      })
 
     })
-
-  })
-  
+      
 }
+
+// getTemplateNames(chrome.storage.sync.get("userId")).then( res => {
+//   const templates = res.body();
+//   console.log(templates);
+
+
+// })
+
 chrome.contextMenus.onClicked.addListener(clickSelection);
 
 // Setup UUID for user

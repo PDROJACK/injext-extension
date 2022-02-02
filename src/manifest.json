@@ -14,5 +14,5 @@
       "js": ["content.js"]
     }],
     "permissions": ["tabs", "storage", "activeTab", "contextMenus", "identity"],
-    "host_permissions": ["https://*/"]
+    "host_permissions": ["http://*/"]
   }
