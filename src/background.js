@@ -11,28 +11,87 @@ function getRandomToken() {
     return hex;
 }
 
+const api = "https://api.injext.tech/api"
+
 local_cache = {}
 
-chrome.storage.sync.get(['userId']).then(res => {
-  local_cache.userId = res.userId;
-  console.log(local_cache)
+// First level , add directly to parents 
+const parentMenu = chrome.contextMenus.create({
+  title: "injext",
+  id: "injext",
+  contexts: ["editable"]
 })
 
-const api = "http://localhost:3000"
+chrome.storage.sync.get(['userId']).then(res => {
+
+  local_cache.userId = res.userId;
+
+  const templates = getTemplateNames(res.userId);
+
+  templates.then( body => {
+
+    body.data.map( t => {
+
+      if(t.key ==="#") {
+        
+        // First level , add directly to parents 
+        t.value.map( c => {
+          
+          chrome.contextMenus.create({
+            title: c.split(".")[0],
+            id: c,
+            parentId: "injext",
+            contexts: ["editable"]
+          })
+          
+        })
+        
+      } else {
+        
+        // Second Level directories, add directories to parent then children to these directories
+        chrome.contextMenus.create({
+          title: t.key,
+          id: t.key,
+          parentId: "injext",
+          contexts: ["editable"]
+        })
+        
+        t.value.map( c => {
+          
+          chrome.contextMenus.create({
+            title: c.split(".")[0],
+            id: c,
+            parentId: t.key,
+            contexts: ["editable"]
+          })
+          
+        })
+      }
+
+    })
+
+  })
+
+})
 
 const getTemplateNames = async ( userId ) => {
-  const user = "86c8e255-56fc-48f6-8440-f62496fa74a2";
-  const response  = await fetch(`${api}/templates/${user}`, {
+
+  const response  = await fetch(`${api}/templates/${userId}`, {
       method: "GET",
       mode: "no-cors",
       headers: {
           'Content-Type': "application/json"
       }
   })
+
   return response.json();
+
 }
 
 const getTemplateData = async ( userId, templateName ) => {
+  
+  templateName = JSON.stringify(templateName)
+
   const response  = await fetch(`${api}/servetemplate/${userId}/${templateName}`, {
       method: "GET",
       mode: "no-cors",
@@ -42,86 +101,23 @@ const getTemplateData = async ( userId, templateName ) => {
   })
   
   return response.json();
+
 } 
 
 const clickSelection = function (info, selectedTab) {
+
   chrome.tabs.query({active: true, currentWindow: true}, function() {
 
-      getTemplateData( local_cache.userId , info.menuItemId).then( res => {
+      getTemplateData( local_cache.userId , [info.parentMenuItemId, info.menuItemId]).then( res => {
           const body = res.template;
           chrome.tabs.sendMessage(selectedTab.id, { data: body }, function(response) {
               console.log("success")
           });
       })
 
-
   });
+
 }
-
-// First level , add directly to parents 
-const parentMenu = chrome.contextMenus.create({
-  title: "injext",
-  id: "parent",
-  contexts: ["editable"]
-})
-
-
-
-
-if(local_cache !== null) {
-     
-    const templates = getTemplateNames(local_cache.userId);
-
-    templates.then( body => {
-
-      body.data.map( t => {
-        if(t.key ==="#") {
-          
-          // First level , add directly to parents 
-          t.value.map( c => {
-            
-            chrome.contextMenus.create({
-              title: c.split(".")[0],
-              id: c.split(".")[0],
-              parentId: "parent",
-              contexts: ["editable"]
-            })
-            
-          })
-          
-        } else {
-          
-          // Second Level directories, add directories to parent then children to these directories
-          chrome.contextMenus.create({
-            title: t.key,
-            id: t.key,
-            parentId: "parent",
-            contexts: ["editable"]
-          })
-          
-          t.value.map( c => {
-            
-            chrome.contextMenus.create({
-              title: c.split(".")[0],
-              id: c,
-              parentId: t.key,
-              contexts: ["editable"]
-            })
-            
-          })
-        }
-      })
-
-    })
-      
-}
-
-// getTemplateNames(chrome.storage.sync.get("userId")).then( res => {
-//   const templates = res.body();
-//   console.log(templates);
-
-
-// })
 
 chrome.contextMenus.onClicked.addListener(clickSelection);
 
@@ -134,12 +130,20 @@ chrome.runtime.onInstalled.addListener(async function(){
       );
     }
     
-    let userId = await uuidv4()
+    let newUserId = await uuidv4()
 
-    chrome.storage.sync.set({
-      userId
-    }, function(){
-      console.log("UUID set");
+    // Check if userId in DB
+    chrome.storage.sync.get(['userId']).then( res => {
+        if (res === null || res.userId === null){
+          // Generate Id
+          chrome.storage.sync.set({
+            "userId": newUserId
+          }, function(){
+            console.log("new User Id: " + newUserId);
+          })
+        }
+    }).catch( err => {
+      console.log(err)
     })
 
 });

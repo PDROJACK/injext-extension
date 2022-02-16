@@ -1,18 +1,18 @@
 {
-    "name": "injext",
-    "description": "Fill forms using git repository",
-    "version": "1.0",
-    "manifest_version": 3,
-    "action": {
-      "default_popup": "./popup.html"
-    },
-    "background": {
-      "service_worker": "background.js"
-    },
-    "content_scripts": [{
-      "matches": ["https://*/*"],
-      "js": ["content.js"]
-    }],
-    "permissions": ["tabs", "storage", "activeTab", "contextMenus", "identity"],
-    "host_permissions": ["http://*/"]
-  }
+  "name": "injext",
+  "description": "Fill forms using git repository",
+  "version": "1.0",
+  "manifest_version": 3,
+  "action": {
+    "default_popup": "./popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [{
+    "matches": ["https://*/*"],
+    "js": ["content.js"]
+  }],
+  "permissions": ["tabs", "storage", "activeTab", "contextMenus", "identity"],
+  "host_permissions": ["https://api.injext.tech"]
+}
