@@ -9,10 +9,11 @@
   "background": {
     "service_worker": "background.js"
   },
-  "content_scripts": [{
-    "matches": ["https://*/*"],
-    "js": ["content.js"]
-  }],
-  "permissions": ["tabs", "storage", "activeTab", "contextMenus", "identity"],
-  "host_permissions": ["https://api.injext.tech"]
+  "icons": {
+    "128":"icon128.png",
+    "48":"icon48.png",
+    "16":"icon16.png"
+  },
+  "permissions": ["storage", "activeTab", "contextMenus"],
+  "host_permissions": ["https://api.github.com/"]
 }
