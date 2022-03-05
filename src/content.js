@@ -1,9 +1,13 @@
 // Status: 1=success, 0=error
-chrome.runtime.onMessage.addListener(
-    function(request, sender, sendResponse) {
-      if (request.data !== null){
-            document.activeElement.value= request.data
-            sendResponse({status: "1"});
-        }
-    }
-);
+// content_script.js
+if (!chrome.runtime.onMessage.hasListeners()) {
+
+  chrome.runtime.onMessage.addListener(
+    (request, sender, sendResponse) => {
+      console.log(request)
+      document.activeElement.value = request.res;
+      sendResponse(true);
+    },
+  );
+
+}

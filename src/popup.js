@@ -46,13 +46,18 @@ const clickkk = function sendRepo() {
               console.log("linkeds")
               inputArea.style.display = "none";
               changeRepo.style.display = "inline";
+
+              chrome.runtime.sendMessage({action: "link"}, function(r) {
+                console.log(r);
+              });
+
             })
           }
       }).catch(err => console.log(err));
+    
     } else {
       alert("Invalid URL please enter again");
-    }
-
+  }
 }
 
 inputButton.addEventListener("click", clickkk);
